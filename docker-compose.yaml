@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  
+  database:
+    image: mysql:5.7.37
+    container_name: acs-db
+    platform: linux/x86_64
+    volumes:
+      - db_data:/var/lib/data
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: acs
+      MYSQL_USER: acs
+      MYSQL_PASSWORD: pass 
+    ports:
+      - 33067:3306
+  app:
+    entrypoint: ["nest", "start", "--debug", "--watch"]
+    container_name: acs-api
+    build:
+      context: .
+    # command: npm run start:debug
+    ports:
+      - 3000:3000
+      - 9222:9229
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    depends_on:
+      - database
+    environment:
+      DB_HOST: database
+      DB_NAME: acs
+      DB_USER: acs
+      DB_PASSWORD: pass
+      DB_PORT: 3306
+      DB_TIMEZONE: +02:00
+  
+volumes:
+  db_data: {}
